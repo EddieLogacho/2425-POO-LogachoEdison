@@ -1,3 +1,5 @@
+print(f"UNIVERSIDAD ESTATAL AMAZONICA")
+print(f"Edison Logacho")
 # se crea la clase padre
 class Persona:
     def __init__(self, nombre,edad,sexo):#metodo constructor
