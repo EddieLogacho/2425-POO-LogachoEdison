@@ -1,6 +1,7 @@
 # el programa trata de calcular el area del rectángulo
 # creamos las variables que nos permitan almacenar la base y la altura
 # se crea la funcion snake_case como se pide en el deber
+
 def calcular_area(base, altura):
     """Calcula el área de un rectángulo"""
     return base * altura
