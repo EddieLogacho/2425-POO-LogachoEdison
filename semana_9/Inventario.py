@@ -1,13 +1,13 @@
-print("UNIVERSIDAD ESTATAL AMAZÓNICA".center(50,'-'))
-print(' Eddie Logacho --> POO '.center(50,'*'))
-#creamos la clase Padre
+#se a importado eta libreria para verificar si el archivo .txt exixte
+import os
+#se crea la clase padre
 class Producto:
     def __init__(self, id_producto, nombre, cantidad, precio):
         self.id_producto = id_producto
         self.nombre = nombre
         self.cantidad = cantidad
         self.precio = precio
-#con el getter vamos a acceder a los atributos
+
     def get_id(self):
         return self.id_producto
 
@@ -19,7 +19,7 @@ class Producto:
 
     def get_precio(self):
         return self.precio
-#con el Setter nos permite modificar el valor de un atributo de manera controlada.
+
     def set_cantidad(self, cantidad):
         self.cantidad = cantidad
 
@@ -27,29 +27,67 @@ class Producto:
         self.precio = precio
 
     def __str__(self):
-        return f"ID: {self.id_producto}, Nombre: {self.nombre}, Cantidad: {self.cantidad}, Precio: {self.precio}"
+        return f"ID: {self.id_producto}, Nombre: {self.nombre}, Cantidad: {self.cantidad}, Precio: {self.precio:.2f}"
 
-# se crea la clase hija
+    def to_file_string(self):
+        return f"{self.id_producto},{self.nombre},{self.cantidad},{self.precio}\n"
+
+    @staticmethod
+    def from_file_string(line):
+      #try y except sirbe para manejar errores y evitar que el problema se detenga
+        try:
+            id_producto, nombre, cantidad, precio = line.strip().split(',')
+            return Producto(id_producto, nombre, int(cantidad), float(precio))
+        except ValueError:
+            return None
+
+#esta es la clase hija
 class Inventario:
+    FILE_NAME = "inventario.txt"
+
     def __init__(self):
         self.productos = []
+        self.cargar_desde_archivo()
 
-    # se crea una función para agregar los productos
+    def guardar_en_archivo(self):
+        try:
+          # con with open se usa para abrir el archivo de manera eficiente y segura
+            with open(self.FILE_NAME, "w") as file:
+                for producto in self.productos:
+                    file.write(producto.to_file_string())
+        except PermissionError:# se utiliza para capturar y manejar un error
+            print("Error: No tienes permiso para escribir en el archivo.")
+
+    def cargar_desde_archivo(self):
+        if not os.path.exists(self.FILE_NAME):
+            return
+        try:
+            with open(self.FILE_NAME, "r") as file:
+                for line in file:
+                    producto = Producto.from_file_string(line)
+                    if producto:
+                        self.productos.append(producto)
+        except FileNotFoundError:# se utiliza para manejar el error que ocurre cuando se intenta accedera un archivo q no exixte
+            print("Archivo de inventario no encontrado, iniciando con un inventario vacío.")
+        except Exception as e:
+            print(f"Error al leer el archivo: {e}")
+
     def agregar_producto(self, producto):
-        # 'any' sirbe para verificar si ya existe un producto en el inventario con el mismo
         if any(p.get_id() == producto.get_id() for p in self.productos):
             print("Error: El ID del producto ya existe.")
-        else:
-            #con 'append' agrega un nuevo elemento a la lista.
-            self.productos.append(producto)
-            print("Producto agregado exitosamente.")
+            return
+        self.productos.append(producto)
+        self.guardar_en_archivo()
+        print("Producto agregado exitosamente.")
 
-    # se crea una función para eliminar los productos
     def eliminar_producto(self, id_producto):
-        self.productos = [p for p in self.productos if p.get_id() != id_producto]
-        print("Producto eliminado exitosamente.")
+        if any(p.get_id() == id_producto for p in self.productos):
+            self.productos = [p for p in self.productos if p.get_id() != id_producto]
+            self.guardar_en_archivo()
+            print("Producto eliminado exitosamente.")
+        else:
+            print("Error: Producto no encontrado.")
 
-    # se crea una función para actualizar los productos
     def actualizar_producto(self, id_producto, nueva_cantidad=None, nuevo_precio=None):
         for producto in self.productos:
             if producto.get_id() == id_producto:
@@ -57,13 +95,14 @@ class Inventario:
                     producto.set_cantidad(nueva_cantidad)
                 if nuevo_precio is not None:
                     producto.set_precio(nuevo_precio)
+                self.guardar_en_archivo()
                 print("Producto actualizado exitosamente.")
                 return
         print("Error: Producto no encontrado.")
 
     def buscar_por_nombre(self, nombre):
-        encontrados = [p for p in self.productos if nombre.lower() in p.get_nombre().lower()]
-        return encontrados
+        nombre = nombre.strip().lower()
+        return [p for p in self.productos if nombre in p.get_nombre().strip().lower()]
 
     def mostrar_productos(self):
         if not self.productos:
@@ -72,12 +111,12 @@ class Inventario:
             for producto in self.productos:
                 print(producto)
 
-# Se crea el menu de opciones que va mostrar en pantalla
+
 def menu():
     inventario = Inventario()
     while True:
         print("""
-        Menu de inventario:
+        MENU DE INVENTARIO:
         (1) Añadir producto
         (2) Eliminar producto
         (3) Actualizar producto
@@ -85,14 +124,17 @@ def menu():
         (5) Mostrar todos los productos
         (6) Salir
         """)
-# aqui el usuario va a seleccionar la opcion requerida
         opcion = input("Seleccione una opción: ")
 
         if opcion == "1":
             id_producto = input("ID del producto: ")
             nombre = input("Nombre del producto: ")
-            cantidad = int(input("Cantidad: "))
-            precio = float(input("Precio: "))
+            try:
+                cantidad = int(input("Cantidad: "))
+                precio = float(input("Precio: ").replace(",", "."))
+            except ValueError:
+                print("Error: Ingrese valores numéricos válidos en cantidad y precio.")
+                continue
             producto = Producto(id_producto, nombre, cantidad, precio)
             inventario.agregar_producto(producto)
 
@@ -106,7 +148,10 @@ def menu():
             nuevo_precio = input("Nuevo precio (dejar vacío si no desea cambiar): ")
 
             nueva_cantidad = int(nueva_cantidad) if nueva_cantidad else None
-            nuevo_precio = float(nuevo_precio) if nuevo_precio else None
+            try:
+                nuevo_precio = float(nuevo_precio.replace(",", ".")) if nuevo_precio else None
+            except ValueError:
+                nuevo_precio = None
 
             inventario.actualizar_producto(id_producto, nueva_cantidad, nuevo_precio)
 
@@ -125,9 +170,10 @@ def menu():
         elif opcion == "6":
             print("Saliendo del programa...")
             break
+
         else:
             print("Opción no válida. Intente de nuevo.")
 
-#asegura que el código dentro de ese bloque se ejecute solo cuando el archivo se ejecute directamente, no cuando se importe como módulo en otro archivo
+
 if __name__ == "__main__":
     menu()
