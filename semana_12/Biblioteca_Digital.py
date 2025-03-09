@@ -1,6 +1,5 @@
 import json
 import os
-print('UNIVERSIDAD ESTATAL AMAZONICA')
 
 class Libro:
     def __init__(self, isbn, titulo, autor, categoria, prestado=False):
