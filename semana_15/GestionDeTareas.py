@@ -37,9 +37,9 @@ marco_botones = tk.Frame(ventana)
 marco_botones.pack(pady=5)
 
 # Botones
-boton_añadir = tk.Button(marco_botones, text="Añadir Tarea", command=añadir_tarea)
-boton_marcar = tk.Button(marco_botones, text="Marcar Completada", command=marcar_completada)
-boton_eliminar = tk.Button(marco_botones, text="Eliminar Tarea", command=eliminar_tarea)
+boton_añadir = tk.Button(marco_botones, text="Añadir ", command=añadir_tarea)
+boton_marcar = tk.Button(marco_botones, text="Marcar", command=marcar_completada)
+boton_eliminar = tk.Button(marco_botones, text="Eliminar", command=eliminar_tarea)
 
 boton_añadir.pack(side=tk.LEFT, padx=5)
 boton_marcar.pack(side=tk.LEFT, padx=5)
