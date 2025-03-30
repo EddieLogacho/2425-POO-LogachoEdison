@@ -25,7 +25,7 @@ def eliminar_tarea():
 # Configuración de la ventana principal
 ventana = tk.Tk()
 ventana.title("Agenda")
-ventana.iconbitmap("logo.ico")  # Línea añadida para el ícono
+ventana.iconbitmap("logo.ico")
 ventana.geometry("400x400")
 
 # Campo de entrada
